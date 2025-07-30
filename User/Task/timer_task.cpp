@@ -8,7 +8,6 @@
 
 #include "User/Alg/PID/PID.hpp"
 #include "User/Task/timer_task.hpp"
-#include "adc.h"
 
 // 系统FSM实例
 Class_FSM system_fsm;
@@ -145,6 +144,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
         return;
     }
+
     auto &dr16 = BSP::Remote::Dr16::instance();
 
     // 初始化FSM
@@ -179,6 +179,4 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
     // 应用PID控制并发送电机指令
     applyPIDControlAndSendCommands();
-
-    LOG_INFO("HELLO WORLD");
 }

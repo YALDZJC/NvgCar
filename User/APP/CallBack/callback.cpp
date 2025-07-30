@@ -7,8 +7,9 @@
 #include "User/BSP/Remote/Dr16/dr16.hpp"
 // Replace the metal_uart.hpp with comm_remote.hpp
 #include "User/APP/CommBringe/comm_remote.hpp"
+#include "User/BSP/IMU/HI12H3_IMU.hpp"
+
 #include "User/config.hpp"
-#include "adc.h"
 #include "tim.h"
 
 uint8_t buffer[3] = {0};
@@ -36,27 +37,19 @@ extern "C"
         comm_remote = new APP::CommBringe::CommRemote(&up_uart);
         comm_remote->Init();
 
+        // 初始化IMU
+        BSP::IMU::imu.Init();
+
         HAL_TIM_Base_Start_IT(&htim5);
 
         auto &log = HAL::LOGGER::Logger::getInstance();
         log.trace("Init");
-
-        // HAL_ADCEx_Calibration_Start(&hadc1);
-        HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&ADC_Value, 10);
     }
 
     void InWhile()
     {
         auto &logger = HAL::LOGGER::Logger::getInstance();
         // logger.trace("ADC_V: %d", ADC_V_int);
-
-        auto &uart = HAL::UART::get_uart_bus_instance().get_device(UP_UART_ID);
-
-        rx_frame.size = sizeof(rx_frame.data);
-        rx_frame.data = rx_frame_data;
-
-        uart.transmit_dma(tx_frame);
-        uart.receive_dma_idle(rx_frame);
     }
 } // extern "C"
 
@@ -69,7 +62,7 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
     can1.receive(rx_frame);
     if (hcan == can1.get_handle())
     {
-        BSP::Motor::Dji::Motor2h006.Parse(rx_frame);
+        BSP::Motor::Dji::Motor2006.Parse(rx_frame);
     }
 }
 
@@ -77,9 +70,14 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
     auto &dr16 = HAL::UART::get_uart_bus_instance().get_device(DR16_UART_ID);
+    auto &imu_uart = HAL::UART::get_uart_bus_instance().get_device(IMU_UART_ID);
 
     if (huart == dr16.get_handle())
     {
         BSP::Remote::Dr16::instance().Parse(&dr16, Size);
+    }
+    if (huart == imu_uart.get_handle())
+    {
+        BSP::IMU::imu.Parse(huart, Size);
     }
 }

@@ -3,7 +3,7 @@
 // 遥控器串口配置（可根据实际硬件修改）
 #define DR16_UART_ID HAL::UART::UartDeviceId::HAL_Uart1
 // 上位机串口配置（可根据实际硬件修改）
-#define UP_UART_ID HAL::UART::UartDeviceId::HAL_Uart6
+#define IMU_UART_ID HAL::UART::UartDeviceId::HAL_Uart6
 // 遥控器在线状态检测超时时间（毫秒）
 #define REMOTE_ONLINE_TIMEOUT_MS 100
 
